@@ -1,7 +1,7 @@
 {
   "name": "jwplayer-flex-sdk",
   "description": "A Node.js module to download and \"install\" the latest open source Apache/Adobe Flex SDK.",
-  "version": "4.6.0-0",
+  "version": "4.6.0-1",
   "flexSdk": {
     "url": "http://fpdownload.adobe.com/pub/flex/sdk/builds/flex4.6/flex_sdk_4.6.0.23201_mpl.zip"
   },
