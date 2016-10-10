@@ -20,12 +20,11 @@ var async = require('async');
 var download = require('download');
 var rimraf = require('rimraf');
 var mkdirp = require('mkdirp');
-var D2UConverter = require('dos2unix').dos2unix;
 var pkgMeta = require('./package.json');
 
 
 // IMPORTANT:
-// This `require` call MUST be done post-download because the export of this 
+// This `require` call MUST be done post-download because the export of this
 // module is dynamically created based on the executables present after
 // downloading and unzipping the relevant Flex SDK.
 // If the `require` call is done prior to the download completing, then the
@@ -114,64 +113,6 @@ function refreshSdk(done) {
   done();
 }
 
-
-function fixLineEndings(done) {
-  console.log('Fixing line endings with the `dos2unix` Node module...');
-
-  // Convert all DOS line endings (CrLf) to UNIX line endings (Lf)
-  var d2uOptions = {
-    glob: {
-      cwd: libPath
-    },
-    maxConcurrency: 100  /* Only open a max of 100 files at once */
-  };
-  var conversionEndedAlready = false;
-  var errors = [];
-  var dos2unix = new D2UConverter(d2uOptions)
-    .on('convert.error', function(err) {
-      err.type = 'convert.error';
-      errors.push(err);
-    })
-    .on('processing.error', function(err) {
-      err.type = 'processing.error';
-      errors.push(err);
-    })
-    .on('error', function(err) {
-      console.error('Critical error while fixing line endings:\n' + (err.stack || err));
-      if (!conversionEndedAlready) {
-        if (errors.length) {
-          logErrorsToFile(errors, 'dos2unix');
-        }
-        return done(new Error('Exiting prematurely...'));
-      }
-    })
-    .on('end', function(stats) {
-      conversionEndedAlready = true;
-      var err;
-      if (errors.length || stats.error > 0) {
-        logErrorsToFile(errors, 'dos2unix');
-        err = new Error('"dos2unix" processing completed but had errors');
-      }
-      console.log('dos2unix conversion stats: ' + JSON.stringify(stats));
-
-      // Next!
-      done(err);
-    });
-
-  // DEBUGGING
-  if (DEBUG_TRAVIS) {
-    ['start', 'processing.start', 'processing.skip', 'convert.start', 'convert.end', 'processing.end'].forEach(function(e) {
-      dos2unix.on(e, function() {
-        var args = [].slice.call(arguments, 0);
-        console.log('[DEBUG] dos2unix event: ' + JSON.stringify({ 'type': e, 'args': args }, null, '  '));
-      });
-    });
-  }
-
-  dos2unix.process(['**/*']);
-}
-
-
 function fixJavaInvocationsForMac(done) {
   // Cleanup: RegExp stuff for finding and replacing
   var javaInvocationRegex = /^java .*\$VMARGS/m;
@@ -236,7 +177,6 @@ async.series([
     cleanDestination,
     downloadIt,
     refreshSdk,
-    fixLineEndings,
     fixJavaInvocationsForMac,
     fixFilePermissions
   ],

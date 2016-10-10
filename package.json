@@ -47,7 +47,6 @@
     "grunt": "^0.4.4",
     "download": "^0.1.12",
     "rimraf": "^2.2.6",
-    "dos2unix": "^1.1.1",
     "async": "^0.6.2"
   },
   "keywords": [
